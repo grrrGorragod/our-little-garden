@@ -66,6 +66,9 @@ namespace OurLittleGarden.Api.Migrations
                     b.Property<int>("Col")
                         .HasColumnType("integer");
 
+                    b.Property<bool>("IsTestFlower")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTime>("PlantedAt")
                         .HasColumnType("timestamp with time zone");
 

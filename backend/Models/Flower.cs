@@ -5,13 +5,16 @@ public class Flower
 {
     public int Id { get; set; }
 
-    // ชนิดดอกไม้ เช่น tulip, daisy, sunflower
+    // ชนิดดอกไม้: tulip, daisy, sunflower
     public string Type { get; set; } = "tulip";
 
-    // ตำแหน่งดอกไม้ในแปลง
+    // ตำแหน่งดอกไม้ในสวน
     public int Col { get; set; }
     public int Row { get; set; }
 
-    // วันที่ปลูก
+    // เวลาที่ปลูกดอกไม้
     public DateTime PlantedAt { get; set; } = DateTime.UtcNow;
+
+    // ระบุว่าเป็นดอกไม้ทดสอบหรือไม่
+    public bool IsTestFlower { get; set; } = false;
 }

@@ -539,6 +539,7 @@ function GardenCanvas({ flowers }: { flowers: Flower[] }) {
 
 function App() {
   const [flowers, setFlowers] = useState<Flower[]>([])
+
   const [showLetter, setShowLetter] = useState(false)
   const [dailyLetter, setDailyLetter] = useState<DailyLetter | null>(null)
   const [isLoadingLetter, setIsLoadingLetter] = useState(false)
@@ -723,12 +724,6 @@ function App() {
     }
   }, [claimedToday, isLoading, isClaiming, loadGarden])
 
-  const resetGarden = () => {
-    window.alert(
-      'สวนนี้ใช้ฐานข้อมูลออนไลน์ร่วมกัน การเริ่มสวนใหม่ต้องมี API สำหรับรีเซ็ตข้อมูล ซึ่งยังไม่ได้เปิดใช้งานเพื่อป้องกันการลบดอกไม้ของทั้งสองคนโดยไม่ตั้งใจครับ',
-    )
-  }
-
   const validPlotKeys = new Set([
   '3,2', '5,2', '2,3', '4,3', '6,3',
   '3,4', '5,4', '2,5', '4,5', '6,5',
@@ -763,9 +758,9 @@ const flowerCount = flowers.filter((flower) =>
 
       <section className="welcome-section" id="home">
         <p className="eyebrow">A LITTLE GARDEN FOR SOMEONE SPECIAL</p>
-        <h1>สวนเล็ก ๆ ของเรา</h1>
+        <h1>สวนดอกไม้ให้หยิน</h1>
         <p className="welcome-description">
-          ทุกดอกไม้คือความตั้งใจเล็ก ๆ ที่อยากมอบให้เธอ
+          จะมีดอกไม้ให้ทุกวันครับ
         </p>
 
         {isLoading && <p role="status">กำลังโหลดสวนออนไลน์...</p>}
@@ -776,7 +771,7 @@ const flowerCount = flowers.filter((flower) =>
         <div className="garden-heading">
           <div>
             <span className="section-kicker">OUR SHARED DREAM</span>
-            <h2>สวนแห่งความสุข</h2>
+            <h2>พื้นที่ของเบ้บหยิน</h2>
           </div>
 
           <span className="garden-status">
@@ -817,7 +812,6 @@ const flowerCount = flowers.filter((flower) =>
 
           <div className="milestones">
             <span>🌱 เริ่มต้น</span>
-            <span>🌷 7 ดอก</span>
             <span>🌻 30 ดอก</span>
           </div>
         </div>
@@ -834,8 +828,8 @@ const flowerCount = flowers.filter((flower) =>
           <p className="eyebrow">A LITTLE GIFT FOR YOU</p>
           <h2>ดอกไม้สำหรับเธอ</h2>
           <p>
-            วันนี้อยากมอบดอกไม้ให้เธออีกหนึ่งดอก
-            ให้สวนของเราค่อย ๆ เติบโตไปด้วยกัน
+            วันนี้อยากให้ดอกไม้เธออีกหนึ่งดอก
+            ให้สวนค่อยๆโตไปครับ
           </p>
         </div>
 
@@ -851,6 +845,7 @@ const flowerCount = flowers.filter((flower) =>
               ? 'รับดอกไม้วันนี้แล้ว ♡'
               : 'รับดอกไม้'}
         </button>
+
       </section>
 
       <section className="garden-actions">
@@ -863,13 +858,6 @@ const flowerCount = flowers.filter((flower) =>
           {isLoadingLetter ? 'กำลังเปิดจดหมาย...' : 'อ่านจดหมาย'}
         </button>
 
-        <button
-          className="button button-quiet"
-          onClick={resetGarden}
-        >
-          <span aria-hidden="true">↻</span>
-          เริ่มสวนใหม่
-        </button>
 
         {letterError && (
           <p role="alert" className="helper-text">
@@ -924,7 +912,7 @@ const flowerCount = flowers.filter((flower) =>
             </p>
 
             <p className="letter-signature">
-              จากสวนเล็ก ๆ ของเรา <span>♡</span>
+              แปลงดอกไม้ให้หยิน <span>♡</span>
             </p>
 
             <button

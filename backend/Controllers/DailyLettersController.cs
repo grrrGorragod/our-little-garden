@@ -18,22 +18,21 @@ public class DailyLettersController : ControllerBase
         _db = db;
     }
 
-    // GET /api/daily-letters/today
-    // อ่านจดหมายประจำวัน ถ้ายังไม่มีจะสุ่มและบันทึกให้
     [HttpGet("today")]
-    public async Task<IActionResult> GetToday(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetToday(
+        CancellationToken cancellationToken)
     {
         var today = GetThailandDate();
 
-        // ถ้ามีจดหมายของวันนี้แล้ว ให้ใช้ฉบับเดิม
+        // ถ้ามีจดหมายแล้ว ให้ปรับชนิดดอกไม้ให้ตรงกับดอกไม้จริง
         var existing = await FindDailyLetter(today, cancellationToken);
 
         if (existing is not null)
         {
+            await SyncFlowerType(existing, today, cancellationToken);
             return Ok(ToResponse(existing));
         }
 
-        // เลือกข้อความที่เปิดใช้งานอยู่
         var messageIds = await _db.LetterMessages
             .AsNoTracking()
             .Where(message => message.IsActive)
@@ -50,7 +49,10 @@ public class DailyLettersController : ControllerBase
 
         var selectedId = messageIds[Random.Shared.Next(messageIds.Count)];
 
-        // สุ่มชนิดดอกไม้และบันทึกไว้กับจดหมายประจำวัน
+        // ใช้ดอกไม้ที่ปลูกจริงวันนี้ก่อน ถ้ายังไม่มีจึงสุ่มเป็นค่าเริ่มต้น
+        var actualFlowerType =
+            await FindTodayFlowerType(today, cancellationToken);
+
         var flowerTypes = new[]
         {
             "tulip",
@@ -64,7 +66,8 @@ public class DailyLettersController : ControllerBase
         {
             LetterDate = today,
             LetterMessageId = selectedId,
-            FlowerType = flowerTypes[Random.Shared.Next(flowerTypes.Length)],
+            FlowerType = actualFlowerType
+                ?? flowerTypes[Random.Shared.Next(flowerTypes.Length)],
             CreatedAt = DateTime.UtcNow
         };
 
@@ -76,21 +79,19 @@ public class DailyLettersController : ControllerBase
         }
         catch (DbUpdateException ex) when (IsUniqueViolation(ex))
         {
-            // หากอุปกรณ์อื่นบันทึกจดหมายของวันนี้ไปก่อนแล้ว
-            // ให้ใช้ฉบับที่บันทึกสำเร็จในฐานข้อมูลแทน
             _db.Entry(dailyLetter).State = EntityState.Detached;
 
             var winner = await FindDailyLetter(today, cancellationToken);
 
             if (winner is not null)
             {
+                await SyncFlowerType(winner, today, cancellationToken);
                 return Ok(ToResponse(winner));
             }
 
             throw;
         }
 
-        // โหลดข้อมูลข้อความเพื่อส่งกลับ
         var saved = await FindDailyLetter(today, cancellationToken);
 
         if (saved is null)
@@ -101,7 +102,56 @@ public class DailyLettersController : ControllerBase
             });
         }
 
+        // เผื่อมีการปลูกดอกไม้ระหว่างสร้างจดหมาย
+        await SyncFlowerType(saved, today, cancellationToken);
+
         return Ok(ToResponse(saved));
+    }
+
+    private async Task SyncFlowerType(
+        DailyLetter letter,
+        DateOnly date,
+        CancellationToken cancellationToken)
+    {
+        var actualFlowerType =
+            await FindTodayFlowerType(date, cancellationToken);
+
+        if (actualFlowerType is not null &&
+            letter.FlowerType != actualFlowerType)
+        {
+            letter.FlowerType = actualFlowerType;
+            await _db.SaveChangesAsync(cancellationToken);
+        }
+    }
+
+    private async Task<string?> FindTodayFlowerType(
+        DateOnly date,
+        CancellationToken cancellationToken)
+    {
+        var timeZone = GetThailandTimeZone();
+
+        var localStart = DateTime.SpecifyKind(
+            date.ToDateTime(TimeOnly.MinValue),
+            DateTimeKind.Unspecified);
+
+        var localEnd = DateTime.SpecifyKind(
+            date.AddDays(1).ToDateTime(TimeOnly.MinValue),
+            DateTimeKind.Unspecified);
+
+        var startUtc = TimeZoneInfo.ConvertTimeToUtc(
+            localStart, timeZone);
+
+        var endUtc = TimeZoneInfo.ConvertTimeToUtc(
+            localEnd, timeZone);
+
+        return await _db.Flowers
+            .AsNoTracking()
+            .Where(flower =>
+                flower.PlantedAt >= startUtc &&
+                flower.PlantedAt < endUtc)
+            .OrderByDescending(flower => flower.PlantedAt)
+            .Select(flower => flower.Type)
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     private async Task<DailyLetter?> FindDailyLetter(
@@ -128,29 +178,31 @@ public class DailyLettersController : ControllerBase
 
     private static DateOnly GetThailandDate()
     {
-        TimeZoneInfo thailandTimeZone;
+        var thailandNow = TimeZoneInfo.ConvertTimeFromUtc(
+            DateTime.UtcNow,
+            GetThailandTimeZone());
 
+        return DateOnly.FromDateTime(thailandNow);
+    }
+
+    private static TimeZoneInfo GetThailandTimeZone()
+    {
         try
         {
-            thailandTimeZone =
-                TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            return TimeZoneInfo.FindSystemTimeZoneById(
+                "SE Asia Standard Time");
         }
         catch (TimeZoneNotFoundException)
         {
-            thailandTimeZone =
-                TimeZoneInfo.FindSystemTimeZoneById("Asia/Bangkok");
+            return TimeZoneInfo.FindSystemTimeZoneById(
+                "Asia/Bangkok");
         }
-
-        var thailandNow = TimeZoneInfo.ConvertTimeFromUtc(
-            DateTime.UtcNow,
-            thailandTimeZone);
-
-        return DateOnly.FromDateTime(thailandNow);
     }
 
     private static bool IsUniqueViolation(DbUpdateException exception)
     {
         return exception.InnerException is PostgresException postgresException
-            && postgresException.SqlState == PostgresErrorCodes.UniqueViolation;
+            && postgresException.SqlState ==
+               PostgresErrorCodes.UniqueViolation;
     }
 }

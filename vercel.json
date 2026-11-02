@@ -1,0 +1,9 @@
+
+{
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://our-little-garden.onrender.com/api/$1"
+    }
+  ]
+}

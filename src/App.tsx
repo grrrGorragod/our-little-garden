@@ -1,7 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import './App.css'
 
-type FlowerType = 'tulip' | 'daisy' | 'sunflower'
+type FlowerType =
+  | 'tulip'
+  | 'daisy'
+  | 'sunflower'
+  | 'cherry-blossom'
+  | 'rose'
+  | 'lavender'
+  | 'babys-breath'
+  | 'peony'
+  | 'hydrangea'
 type LetterFlowerType = FlowerType | 'rose' | 'lily'
 
 type Flower = {
@@ -17,10 +26,25 @@ type DailyLetter = {
   flowerType: LetterFlowerType
 }
 
-const FLOWER_INFO: Record<FlowerType, { name: string; color: string }> = {
+const FLOWER_INFO: Record<
+  FlowerType,
+  { name: string; color: string }
+> = {
   tulip: { name: 'ทิวลิปสีชมพู', color: '#f28eae' },
   daisy: { name: 'เดซี่แสนหวาน', color: '#fff3df' },
   sunflower: { name: 'ทานตะวัน', color: '#ffc857' },
+  'cherry-blossom': {
+    name: 'ซากุระ',
+    color: '#ffb7d5',
+  },
+  rose: { name: 'กุหลาบ', color: '#e85d75' },
+  lavender: { name: 'ลาเวนเดอร์', color: '#a98be8' },
+  'babys-breath': {
+    name: 'ยิปโซ',
+    color: '#fff9f0',
+  },
+  peony: { name: 'โบตั๋น', color: '#f18ac2' },
+  hydrangea: { name: 'ไฮเดรนเยีย', color: '#8c9ff2' },
 }
 
 const LETTER_FLOWER_INFO: Record<
@@ -30,7 +54,12 @@ const LETTER_FLOWER_INFO: Record<
   tulip: { name: 'ทิวลิปสีชมพู', emoji: '🌷' },
   daisy: { name: 'เดซี่แสนหวาน', emoji: '🌼' },
   sunflower: { name: 'ทานตะวัน', emoji: '🌻' },
+  'cherry-blossom': { name: 'ซากุระ', emoji: '🌸' },
   rose: { name: 'กุหลาบ', emoji: '🌹' },
+  lavender: { name: 'ลาเวนเดอร์', emoji: '💜' },
+  'babys-breath': { name: 'ยิปโซ', emoji: '🤍' },
+  peony: { name: 'โบตั๋น', emoji: '🌺' },
+  hydrangea: { name: 'ไฮเดรนเยีย', emoji: '💠' },
   lily: { name: 'ดอกลิลลี่', emoji: '💮' },
 }
 
@@ -83,6 +112,7 @@ function drawPixelFlower(
   const flowerY = y - 17
   const offset = Math.round(sway)
 
+ 
   if (type === 'tulip') {
     ctx.fillStyle = petal
     ctx.fillRect(x - 5 + offset, flowerY - 3, 5, 8)
@@ -91,7 +121,84 @@ function drawPixelFlower(
 
     ctx.fillStyle = '#d85c8a'
     ctx.fillRect(x + offset, flowerY - 6, 3, 7)
+  } else if (type === 'cherry-blossom') {
+    // ซากุระ: กลีบชมพู 5 กลีบ
+    ctx.fillStyle = '#ffb7d5'
+    ctx.fillRect(x - 2 + offset, flowerY - 9, 5, 5)
+    ctx.fillRect(x - 8 + offset, flowerY - 5, 5, 5)
+    ctx.fillRect(x + 4 + offset, flowerY - 5, 5, 5)
+    ctx.fillRect(x - 6 + offset, flowerY + 1, 5, 5)
+    ctx.fillRect(x + 2 + offset, flowerY + 1, 5, 5)
+
+    ctx.fillStyle = '#ffe8f2'
+    ctx.fillRect(x - 1 + offset, flowerY - 6, 4, 5)
+
+    ctx.fillStyle = '#d96b9b'
+    ctx.fillRect(x + offset, flowerY - 2, 3, 3)
+  } else if (type === 'rose') {
+    // กุหลาบ: กลีบซ้อนสีแดงชมพู
+    ctx.fillStyle = '#e85d75'
+    ctx.fillRect(x - 6 + offset, flowerY - 4, 6, 7)
+    ctx.fillRect(x + 1 + offset, flowerY - 5, 7, 8)
+    ctx.fillRect(x - 4 + offset, flowerY - 9, 9, 6)
+
+    ctx.fillStyle = '#ff9aaf'
+    ctx.fillRect(x - 2 + offset, flowerY - 7, 5, 4)
+
+    ctx.fillStyle = '#b93659'
+    ctx.fillRect(x + offset, flowerY - 4, 3, 4)
+  } else if (type === 'lavender') {
+    // ลาเวนเดอร์: ช่อดอกสีม่วง
+    ctx.fillStyle = '#8066c9'
+    ctx.fillRect(x - 2 + offset, flowerY - 13, 5, 4)
+    ctx.fillRect(x - 6 + offset, flowerY - 10, 5, 4)
+    ctx.fillRect(x + 3 + offset, flowerY - 10, 5, 4)
+    ctx.fillRect(x - 3 + offset, flowerY - 7, 5, 4)
+    ctx.fillRect(x + 2 + offset, flowerY - 5, 5, 4)
+
+    ctx.fillStyle = '#c4a7ff'
+    ctx.fillRect(x - 1 + offset, flowerY - 12, 3, 3)
+    ctx.fillRect(x - 4 + offset, flowerY - 9, 3, 3)
+  } else if (type === 'babys-breath') {
+    // ยิปโซ: ดอกเล็กสีขาวหลายดอก
+    ctx.fillStyle = '#fff9f0'
+    ctx.fillRect(x - 7 + offset, flowerY - 7, 4, 4)
+    ctx.fillRect(x - 1 + offset, flowerY - 11, 4, 4)
+    ctx.fillRect(x + 4 + offset, flowerY - 6, 4, 4)
+    ctx.fillRect(x - 4 + offset, flowerY, 4, 4)
+    ctx.fillRect(x + 2 + offset, flowerY - 1, 4, 4)
+
+    ctx.fillStyle = '#f2d8e8'
+    ctx.fillRect(x - 6 + offset, flowerY - 6, 2, 2)
+    ctx.fillRect(x + offset, flowerY - 10, 2, 2)
+  } else if (type === 'peony') {
+    // โบตั๋น: ดอกใหญ่กลีบฟู
+    ctx.fillStyle = '#f18ac2'
+    ctx.fillRect(x - 7 + offset, flowerY - 5, 6, 7)
+    ctx.fillRect(x - 4 + offset, flowerY - 9, 6, 7)
+    ctx.fillRect(x + 1 + offset, flowerY - 9, 6, 7)
+    ctx.fillRect(x + 4 + offset, flowerY - 4, 6, 7)
+    ctx.fillRect(x - 3 + offset, flowerY, 7, 4)
+
+    ctx.fillStyle = '#ffc1e0'
+    ctx.fillRect(x - 2 + offset, flowerY - 6, 5, 5)
+    ctx.fillRect(x + offset, flowerY - 2, 4, 3)
+  } else if (type === 'hydrangea') {
+    // ไฮเดรนเยีย: ช่อกลมสีน้ำเงินม่วง
+    ctx.fillStyle = '#7589e8'
+    ctx.fillRect(x - 7 + offset, flowerY - 7, 5, 5)
+    ctx.fillRect(x - 2 + offset, flowerY - 10, 5, 5)
+    ctx.fillRect(x + 3 + offset, flowerY - 7, 5, 5)
+    ctx.fillRect(x - 6 + offset, flowerY - 2, 5, 5)
+    ctx.fillRect(x - 1 + offset, flowerY - 4, 5, 5)
+    ctx.fillRect(x + 4 + offset, flowerY - 2, 5, 5)
+
+    ctx.fillStyle = '#b6c5ff'
+    ctx.fillRect(x - 1 + offset, flowerY - 8, 3, 3)
+    ctx.fillRect(x - 5 + offset, flowerY - 5, 3, 3)
+    ctx.fillRect(x + 3 + offset, flowerY - 4, 3, 3)
   } else {
+    // เดซี่และทานตะวัน: คงรูปแบบดอกไม้เดิม
     const petals = [
       [-4, -5],
       [0, -8],
@@ -115,6 +222,7 @@ function drawPixelFlower(
       ctx.fillStyle = '#754a2c'
       ctx.fillRect(x + offset, flowerY, 2, 2)
     }
+
   }
 
   // ไฮไลต์เล็ก ๆ
@@ -277,6 +385,10 @@ function drawGarden(
     { col: 3, row: 6 },
     { col: 5, row: 6 },
     { col: 4, row: 7 },
+    { col: 1, row: 4 },
+    { col: 7, row: 4 },
+    { col: 1, row: 6 },
+    { col: 7, row: 6 },
     { col: 2, row: 7 },
     { col: 6, row: 7 },
     { col: 3, row: 8 },
@@ -284,16 +396,12 @@ function drawGarden(
     { col: 4, row: 9 },
     { col: 2, row: 9 },
     { col: 6, row: 9 },
-    { col: 3, row: 10 },
-    { col: 5, row: 10 },
-    { col: 4, row: 11 },
-    { col: 2, row: 11 },
-    { col: 6, row: 11 },
-    { col: 1, row: 6 },
-    { col: 7, row: 6 },
     { col: 1, row: 8 },
     { col: 7, row: 8 },
-    { col: 4, row: 5 },
+    { col: 3, row: 10 },
+    { col: 5, row: 10 },
+    { col: 2, row: 11 },
+    { col: 6, row: 11 },
   ]
 
   for (const plot of plotCells) {
@@ -346,9 +454,16 @@ function drawGarden(
   ctx.fillRect(bench.x - 17, bench.y - 7, 34, 4)
 
   // เรียงดอกไม้ตามตำแหน่งเพื่อให้มีมิติ
-  const sortedFlowers = [...flowers].sort(
-    (a, b) => a.col + a.row - (b.col + b.row),
+  // วาดเฉพาะดอกไม้ที่อยู่บนแปลงปลูกจริง
+  const validPlotKeys = new Set(
+    plotCells.map((plot) => `${plot.col},${plot.row}`),
   )
+
+  const sortedFlowers = flowers
+    .filter((flower) =>
+      validPlotKeys.has(`${flower.col},${flower.row}`),
+    )
+    .sort((a, b) => a.col + a.row - (b.col + b.row))
 
   for (const flower of sortedFlowers) {
     const p = iso(flower.col, flower.row)
@@ -515,7 +630,12 @@ function App() {
         'tulip',
         'daisy',
         'sunflower',
+        'cherry-blossom',
         'rose',
+        'lavender',
+        'babys-breath',
+        'peony',
+        'hydrangea',
         'lily',
       ]
 
@@ -609,7 +729,18 @@ function App() {
     )
   }
 
-  const flowerCount = flowers.length
+  const validPlotKeys = new Set([
+  '3,2', '5,2', '2,3', '4,3', '6,3',
+  '3,4', '5,4', '2,5', '4,5', '6,5',
+  '3,6', '5,6', '4,7', '1,4', '7,4',
+  '1,6', '7,6', '2,7', '6,7', '3,8',
+  '5,8', '4,9', '2,9', '6,9', '1,8',
+  '7,8', '3,10', '5,10', '2,11', '6,11',
+])
+
+const flowerCount = flowers.filter((flower) =>
+  validPlotKeys.has(`${flower.col},${flower.row}`),
+).length
   const progress = Math.min((flowerCount / 30) * 100, 100)
 
   return (

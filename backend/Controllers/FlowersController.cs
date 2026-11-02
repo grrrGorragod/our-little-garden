@@ -1,4 +1,3 @@
-
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OurLittleGarden.Api.Data;
@@ -36,24 +35,47 @@ public class FlowersController : ControllerBase
     public async Task<ActionResult<Flower>> CreateFlower(
         [FromBody] CreateFlowerRequest request)
     {
-        var allowedTypes = new[] { "tulip", "daisy", "sunflower" };
+        var allowedTypes = new[]
+        {
+            "tulip",
+            "daisy",
+            "sunflower",
+            "cherry-blossom",
+            "rose",
+            "lavender",
+            "babys-breath",
+            "peony",
+            "hydrangea"
+        };
 
         if (!allowedTypes.Contains(request.Type))
         {
             return BadRequest(new
             {
-                message = "ชนิดดอกไม้ต้องเป็น tulip, daisy หรือ sunflower"
+                message = "ชนิดดอกไม้่ถูกต้อง"
             });
         }
 
-        if (request.Col < 0 || request.Row < 0)
+        // พิกัดแปลงปลูกที่อนุญาต
+        var validPlots = new (int Col, int Row)[]
+        {
+            (3, 2), (5, 2), (2, 3), (4, 3), (6, 3),
+            (3, 4), (5, 4), (2, 5), (4, 5), (6, 5),
+            (3, 6), (5, 6), (4, 7), (1, 4), (7, 4),
+            (1, 6), (7, 6), (2, 7), (6, 7), (3, 8),
+            (5, 8), (4, 9), (2, 9), (6, 9), (1, 8),
+            (7, 8), (3, 10), (5, 10), (2, 11), (6, 11)
+        };
+
+        if (!validPlots.Contains((request.Col, request.Row)))
         {
             return BadRequest(new
             {
-                message = "ตำแหน่งดอกไม้ต้องไม่ติดลบ"
+                message = "ตำแหน่งนี้ไม่ใช่แปลงปลูกดอกไม้"
             });
         }
 
+        // สร้างดอกไม้หลังตรวจสอบข้อมูลผ่านแล้ว
         var flower = new Flower
         {
             Type = request.Type,

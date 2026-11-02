@@ -87,7 +87,18 @@ public class DailyFlowerClaimsController : ControllerBase
             var flowerCount = await _db.Flowers.CountAsync(
                 cancellationToken);
 
-            var types = new[] { "tulip", "daisy", "sunflower" };
+            var types = new[]
+            {
+                "tulip",
+                "daisy",
+                "sunflower",
+                "cherry-blossom",
+                "rose",
+                "lavender",
+                "babys-breath",
+                "peony",
+                "hydrangea"
+            };
 
             var flower = new Flower
             {
@@ -121,6 +132,63 @@ public class DailyFlowerClaimsController : ControllerBase
             });
         }
     }
+
+    
+    // POST /api/daily-flower-claims/test
+    // เพิ่มดอกไม้สำหรับทดสอบเฉพาะ Development
+    [HttpPost("test")]
+    public async Task<IActionResult> PlantTestFlower(
+        CancellationToken cancellationToken)
+    {
+        // ห้ามใช้ API นี้นอก Development
+        if (!HttpContext.RequestServices
+            .GetRequiredService<IWebHostEnvironment>()
+            .IsDevelopment())
+        {
+            return NotFound();
+        }
+
+        var occupiedPlots = await _db.Flowers
+            .AsNoTracking()
+            .Select(flower => new { flower.Col, flower.Row })
+            .ToListAsync(cancellationToken);
+
+        var availablePlot = PLOTS.FirstOrDefault(plot =>
+            !occupiedPlots.Any(occupied =>
+                occupied.Col == plot.Col &&
+                occupied.Row == plot.Row));
+
+        if (availablePlot == default)
+        {
+            return Conflict(new
+            {
+                message = "สวนของเราเต็มแล้ว 🌷"
+            });
+        }
+
+        var flowerCount = await _db.Flowers.CountAsync(
+            cancellationToken);
+
+        var types = new[] { "tulip", "daisy", "sunflower" };
+
+        var flower = new Flower
+        {
+            Type = types[flowerCount % types.Length],
+            Col = availablePlot.Col,
+            Row = availablePlot.Row,
+            PlantedAt = DateTime.UtcNow
+        };
+
+        _db.Flowers.Add(flower);
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return Ok(new
+        {
+            message = "เพิ่มดอกไม้ทดสอบสำเร็จ 🌷",
+            flower
+        });
+    }
+
 
     private static bool IsDuplicateKey(DbUpdateException exception)
     {
